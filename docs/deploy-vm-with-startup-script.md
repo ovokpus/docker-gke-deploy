@@ -1,3 +1,5 @@
+# Deploy a Compute Instance with a Remote Startup Script
+
 ## Overview
 
 This playbook guides you through deploying a Google Cloud Compute Engine instance that uses a **remote startup script** stored in a Cloud Storage bucket. Rather than embedding the script directly in the VM’s metadata, we’ll keep it in a bucket (`install-web.sh`), making it easier to iterate on and version-control your initialization logic. In the end, the VM will automatically install Apache on boot, and you’ll verify that HTTP traffic can reach it from the internet.

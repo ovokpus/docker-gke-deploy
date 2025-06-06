@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker to GKE Architecture Diagram</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .architecture {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .phase {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .phase:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .phase-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: all 0.2s ease;
+        }
+
+        .tech-item:hover {
+            border-left-color: #e74c3c;
+            transform: translateX(5px);
+        }
+
+        .tech-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 12px;
+        }
+
+        .tech-info {
+            flex: 1;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .tech-description {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .flow-arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .arrow {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid #3498db;
+            margin: 0 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .flow-horizontal {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .arrow-right {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 30px solid #3498db;
+            animation: slideRight 2s infinite;
+        }
+
+        @keyframes slideRight {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(10px);
+            }
+        }
+
+        .gcp-section {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .gcp-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .gcp-services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .gcp-service {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .workflow-steps {
+            background: #2c3e50;
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .workflow-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .step {
+            background: #34495e;
+            padding: 15px 20px;
+            border-radius: 25px;
+            text-align: center;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .step-number {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Logo Colors */
+        .docker {
+            background: #2496ed;
+        }
+
+        .python {
+            background: #3776ab;
+        }
+
+        .javascript {
+            background: #f7df1e;
+            color: #000;
+        }
+
+        .terraform {
+            background: #623ce4;
+        }
+
+        .git {
+            background: #f05032;
+        }
+
+        .github {
+            background: #181717;
+        }
+
+        .gcp {
+            background: #4285f4;
+        }
+
+        .kubernetes {
+            background: #326ce5;
+        }
+
+        .registry {
+            background: #4285f4;
+        }
+
+        .build {
+            background: #4285f4;
+        }
+
+        .iam {
+            background: #4285f4;
+        }
+
+        .monitoring {
+            background: #4285f4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">🚀 Docker to Google Kubernetes Engine (GKE) Deployment Architecture</h1>
+
+        <div class="architecture">
+            <!-- Development Phase -->
+            <div class="phase">
+                <div class="phase-title">📝 Development & Build</div>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-logo python">PY</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Python</div>
+                            <div class="tech-description">Application Code</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo javascript">JS</div>
+                        <div class="tech-info">
+                            <div class="tech-name">JavaScript</div>
+                            <div class="tech-description">Frontend/API Code</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo docker">🐳</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Docker</div>
+                            <div class="tech-description">Containerization</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo git">GIT</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Git</div>
+                            <div class="tech-description">Version Control</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo github">GH</div>
+                        <div class="tech-info">
+                            <div class="tech-name">GitHub</div>
+                            <div class="tech-description">Code Repository</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infrastructure Phase -->
+            <div class="phase">
+                <div class="phase-title">🏗️ Infrastructure & CI/CD</div>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-logo terraform">TF</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Terraform</div>
+                            <div class="tech-description">Infrastructure as Code</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo build">CB</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Cloud Build</div>
+                            <div class="tech-description">CI/CD Pipeline</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo registry">AR</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Artifact Registry</div>
+                            <div class="tech-description">Container Images</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo iam">IAM</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Cloud IAM</div>
+                            <div class="tech-description">Access Management</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Phase -->
+            <div class="phase">
+                <div class="phase-title">☁️ Deployment & Runtime</div>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-logo gcp">GCP</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Google Cloud Platform</div>
+                            <div class="tech-description">Cloud Provider</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo kubernetes">K8s</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Google Kubernetes Engine</div>
+                            <div class="tech-description">Managed Kubernetes</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo monitoring">📊</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Cloud Monitoring</div>
+                            <div class="tech-description">Observability</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-logo gcp">LB</div>
+                        <div class="tech-info">
+                            <div class="tech-name">Load Balancer</div>
+                            <div class="tech-description">Traffic Distribution</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-horizontal">
+            <div></div>
+            <div class="arrow-right"></div>
+            <div></div>
+            <div class="arrow-right"></div>
+            <div></div>
+        </div>
+
+        <div class="gcp-section">
+            <div class="gcp-title">🔧 Google Cloud Platform Services</div>
+            <div class="gcp-services">
+                <div class="gcp-service">
+                    <strong>Google Kubernetes Engine (GKE)</strong><br>
+                    Managed Kubernetes clusters with auto-scaling
+                </div>
+                <div class="gcp-service">
+                    <strong>Artifact Registry</strong><br>
+                    Secure container image storage
+                </div>
+                <div class="gcp-service">
+                    <strong>Cloud Build</strong><br>
+                    Automated build and deployment pipeline
+                </div>
+                <div class="gcp-service">
+                    <strong>Cloud IAM</strong><br>
+                    Identity and access management
+                </div>
+                <div class="gcp-service">
+                    <strong>Cloud Monitoring</strong><br>
+                    Application and infrastructure monitoring
+                </div>
+                <div class="gcp-service">
+                    <strong>Cloud Load Balancing</strong><br>
+                    Global load balancing and SSL termination
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-steps">
+            <div class="workflow-title">🔄 Deployment Workflow</div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    Code Push<br>to GitHub
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    Cloud Build<br>Trigger
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    Docker Build<br>& Test
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    Push to<br>Artifact Registry
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    Deploy to<br>GKE Cluster
+                </div>
+                <div class="step">
+                    <div class="step-number">6</div>
+                    Monitor &<br>Scale
+                </div>
+            </div>
+        </div>
+
+        <div
+            style="margin-top: 30px; padding: 20px; background: #ecf0f1; border-radius: 8px; text-align: center; color: #2c3e50;">
+            <strong>Key Benefits:</strong> Scalable containerized applications, automated CI/CD, managed infrastructure,
+            high availability, and comprehensive monitoring - perfect for data engineering workloads!
+        </div>
+    </div>
+</body>
+
+</html>
