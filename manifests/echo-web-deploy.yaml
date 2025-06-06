@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echo-web
+  template:
+    metadata:
+      labels:
+        app: echo-web
+    spec:
+      containers:
+        - name: echo-web
+          image: gcr.io/qwiklabs-gcp-01-ff4f8c4ec258/echo-app:v1
+          ports:
+            - containerPort: 8000
