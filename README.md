@@ -1,13 +1,33 @@
 # docker-gke-deploy
+
 Building and Deploying a Docker image to a GKE Cluster
 
 ## Summary
 
 This playbook outlines how to build and deploy the **echo-web** sample application to a Google Kubernetes Engine (GKE) cluster named **echo-cluster** using Docker and Google Container Registry (GCR). You will first create a two-node GKE cluster with `e2-standard-2` machine types in the `us-central1-f` zone, then download and unpack the `echo-web.tar.gz` archive from Cloud Storage to build a Docker image tagged `v1`. Next, you will authenticate Docker to push the image to `gcr.io/[PROJECT_ID]/echo-app:v1`. Finally, you will deploy the application by creating a Kubernetes **Deployment** named **echo-web** (which listens on port 8000 inside the container) and expose it via a **Service** that responds on port 80 externally. Throughout, each major concept—from clustering and nodes to containerization and service port mapping—is explained step by step. ([medium.com][1], [skills.google][2], [levelup.gitconnected.com][3], [skills.google][2], [kubernetes.io][4])
 
+Scroll down to find the ![playbook](#playbook)
+
 ---
 
-## Prerequisites
+## 🏗️ Architecture
+
+View our interactive deployment architecture diagram:
+
+**[🚀 Live Interactive Diagram](https://ovokpus.github.io/docker-gke-deploy/)**
+
+This diagram shows the complete Docker to GKE deployment workflow including:
+
+- Development stack (Python, JavaScript, Docker)
+- Infrastructure as Code (Terraform)
+- CI/CD pipeline (Cloud Build)
+- GKE deployment and monitoring
+
+---
+
+## Playbook
+
+### Prerequisites
 
 1. **Google Cloud SDK Installed and Authenticated**
    Ensure the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) is installed and that you have authenticated with `gcloud auth login`. ([fusionauth.io][5], [cloud.google.com][6])
@@ -17,15 +37,16 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
    Install `kubectl` (the Kubernetes CLI tool) and verify it’s available in your PATH (`kubectl version --client`). ([fusionauth.io][5], [kubernetes.io][4])
 4. **Permissions and APIs Enabled**
 
-   * Grant yourself `roles/container.admin`, `roles/compute.networkAdmin`, and `roles/storage.admin` in the project. ([medium.com][1])
-   * Enable the GKE API:
+   - Grant yourself `roles/container.admin`, `roles/compute.networkAdmin`, and `roles/storage.admin` in the project. ([medium.com][1])
+   - Enable the GKE API:
 
      ```bash
      gcloud services enable container.googleapis.com
      ```
 
      ([medium.com][1], [skills.google][2])
-   * Enable the Container Registry API:
+
+   - Enable the Container Registry API:
 
      ```bash
      gcloud services enable containerregistry.googleapis.com
@@ -59,9 +80,9 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
        --num-nodes=2
    ```
 
-   * `--zone us-central1-f`: Specifies a zonal cluster.
-   * `--machine-type e2-standard-2`: Allocates 2 vCPUs and 8 GB RAM per node (cost-effective for testing).
-   * `--num-nodes 2`: Deploys exactly two nodes across one node pool. ([medium.com][1], [github.com][10], [vcluster.com][8])
+   - `--zone us-central1-f`: Specifies a zonal cluster.
+   - `--machine-type e2-standard-2`: Allocates 2 vCPUs and 8 GB RAM per node (cost-effective for testing).
+   - `--num-nodes 2`: Deploys exactly two nodes across one node pool. ([medium.com][1], [github.com][10], [vcluster.com][8])
 
 4. **Verify Cluster Creation**
    Cluster creation can take **10–15 minutes**. After completion, retrieve credentials for `kubectl` and list the nodes:
@@ -101,9 +122,9 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 
    Now `echo-web/` contains:
 
-   * `Dockerfile`
-   * Go source code (e.g., `main.go`)
-   * Any configuration files (e.g., `go.mod`)
+   - `Dockerfile`
+   - Go source code (e.g., `main.go`)
+   - Any configuration files (e.g., `go.mod`)
      ([skills.google][2], [mayankchourasia2.medium.com][7])
 
 4. **Navigate to the Application Directory**
@@ -130,8 +151,8 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
    docker build -t gcr.io/[PROJECT_ID]/echo-app:v1 .
    ```
 
-   * `-t gcr.io/[PROJECT_ID]/echo-app:v1`: Tags the resulting image so you can push it directly to GCR.
-   * `.`: Uses the current directory (`echo-web/`) as the build context, reading from `Dockerfile`. ([skills.google][2], [github.com][11])
+   - `-t gcr.io/[PROJECT_ID]/echo-app:v1`: Tags the resulting image so you can push it directly to GCR.
+   - `.`: Uses the current directory (`echo-web/`) as the build context, reading from `Dockerfile`. ([skills.google][2], [github.com][11])
 
 7. **Verify the Local Image**
    After the build finishes, confirm that the image exists locally:
@@ -151,10 +172,10 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 8. **Concept: Image Layers**
    Docker images are composed of layers:
 
-   * **Base OS layer** (e.g., Alpine or Debian)
-   * **Dependency layers** (e.g., installing Go runtime)
-   * **Application code layer** (compiled Go binary)
-   * **Configuration layer** (ENV, EXPOSE, CMD)
+   - **Base OS layer** (e.g., Alpine or Debian)
+   - **Dependency layers** (e.g., installing Go runtime)
+   - **Application code layer** (compiled Go binary)
+   - **Configuration layer** (ENV, EXPOSE, CMD)
      Tagging the final image as `v1` makes it easier to manage subsequent versions. ([skills.google][2], [stackoverflow.com][12])
 
 ---
@@ -194,8 +215,8 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
    docker push gcr.io/[PROJECT_ID]/echo-app:v1
    ```
 
-   * Each image layer is uploaded to `gcr.io/[PROJECT_ID]/echo-app` under the `v1` tag.
-   * You will see upload progress bars for each layer.
+   - Each image layer is uploaded to `gcr.io/[PROJECT_ID]/echo-app` under the `v1` tag.
+   - You will see upload progress bars for each layer.
      ([skills.google][2])
 
 5. **Verify Push Success**
@@ -209,8 +230,8 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 
 6. **Confirm in Cloud Console or CLI**
 
-   * **Console:** Go to **Container Registry** → **Images** in the Google Cloud Console. You should see a repository named `echo-app` with a `v1` tag. ([skills.google][2], [github.com][11])
-   * **CLI:**
+   - **Console:** Go to **Container Registry** → **Images** in the Google Cloud Console. You should see a repository named `echo-app` with a `v1` tag. ([skills.google][2], [github.com][11])
+   - **CLI:**
 
      ```bash
      gcloud container images list-tags gcr.io/[PROJECT_ID]/echo-app --limit=5
@@ -255,12 +276,12 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
                - containerPort: 8000
    ```
 
-   * **`apiVersion: apps/v1`** and **`kind: Deployment`**: Declares a Deployment resource.
-   * **`metadata.name: echo-web`**: Names the Deployment “echo-web” as required.
-   * **`replicas: 2`**: Ensures two pods are always running for basic availability.
-   * **`selector.matchLabels`** and **`template.metadata.labels`**: Must match so the Deployment can manage its pods.
-   * **`containers[].image`**: Specifies the container image from GCR.
-   * **`ports.containerPort: 8000`**: States that the application inside listens on port 8000. ([levelup.gitconnected.com][3], [linkedin.com][14])
+   - **`apiVersion: apps/v1`** and **`kind: Deployment`**: Declares a Deployment resource.
+   - **`metadata.name: echo-web`**: Names the Deployment “echo-web” as required.
+   - **`replicas: 2`**: Ensures two pods are always running for basic availability.
+   - **`selector.matchLabels`** and **`template.metadata.labels`**: Must match so the Deployment can manage its pods.
+   - **`containers[].image`**: Specifies the container image from GCR.
+   - **`ports.containerPort: 8000`**: States that the application inside listens on port 8000. ([levelup.gitconnected.com][3], [linkedin.com][14])
 
 3. **Apply the Deployment**
 
@@ -294,9 +315,9 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 1. **Concept: Kubernetes Service & LoadBalancer**
    A **Service** abstracts a set of pods and provides a fixed virtual IP.
 
-   * **`ClusterIP`**: Accessible only inside the cluster.
-   * **`NodePort`**: Exposes the service on a port on each node’s IP.
-   * **`LoadBalancer`**: Provisions a cloud load balancer with an external IP, forwarding traffic to the selected pods.
+   - **`ClusterIP`**: Accessible only inside the cluster.
+   - **`NodePort`**: Exposes the service on a port on each node’s IP.
+   - **`LoadBalancer`**: Provisions a cloud load balancer with an external IP, forwarding traffic to the selected pods.
      We will use type `LoadBalancer` so that external HTTP requests on port 80 forward to pods on port 8000. ([kubernetes.io][4], [levelup.gitconnected.com][3])
 
 2. **Write the Service Manifest**
@@ -317,11 +338,11 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
      type: LoadBalancer
    ```
 
-   * **`metadata.name: echo-web-service`**: Names the Service.
-   * **`spec.selector.app: echo-web`**: Selects pods with the label `app=echo-web`.
-   * **`ports.port: 80`**: Exposes service on port 80 externally (standard HTTP).
-   * **`ports.targetPort: 8000`**: Forwards incoming traffic to container port 8000.
-   * **`type: LoadBalancer`**: Requests a cloud load balancer. ([levelup.gitconnected.com][3], [kubernetes.io][4])
+   - **`metadata.name: echo-web-service`**: Names the Service.
+   - **`spec.selector.app: echo-web`**: Selects pods with the label `app=echo-web`.
+   - **`ports.port: 80`**: Exposes service on port 80 externally (standard HTTP).
+   - **`ports.targetPort: 8000`**: Forwards incoming traffic to container port 8000.
+   - **`type: LoadBalancer`**: Requests a cloud load balancer. ([levelup.gitconnected.com][3], [kubernetes.io][4])
 
 3. **Apply the Service**
 
@@ -348,7 +369,7 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 
 5. **Test Application Access**
 
-   * **Inside the Cluster:**
+   - **Inside the Cluster:**
      Retrieve one pod’s IP and port to confirm the app is running:
 
      ```bash
@@ -357,7 +378,8 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
      ```
 
      You should receive a JSON or plaintext response with system information. ([levelup.gitconnected.com][3], [stackoverflow.com][12])
-   * **Externally via LoadBalancer:**
+
+   - **Externally via LoadBalancer:**
      Copy the `EXTERNAL-IP` (e.g., `34.123.45.67`) from:
 
      ```bash
@@ -376,48 +398,48 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 
 ## Concepts Covered
 
-* **Cluster Basics:**
+- **Cluster Basics:**
   Creating a GKE cluster provisions a Kubernetes control plane (managed by Google) and worker nodes (Compute Engine VMs). Nodes are grouped into node pools, and you can choose machine types like `e2-standard-2` for balanced CPU/memory. ([medium.com][1], [vcluster.com][8])
 
-* **Docker Image Build Process:**
+- **Docker Image Build Process:**
   The Dockerfile defines a sequence of instructions to assemble a container image. Each instruction creates a new read-only layer (e.g., `FROM`, `RUN go build`, `COPY`). Tagging with `v1` enables versioning and rollbacks. ([skills.google][2], [mayankchourasia2.medium.com][7])
 
-* **Container Registry (GCR):**
+- **Container Registry (GCR):**
   GCR is a managed Docker registry that stores and serves container images within a Google Cloud project. Using `gcloud auth configure-docker` integrates Docker’s CLI with Google IAM for secure pushes/pulls. ([skills.google][2])
 
-* **Kubernetes Deployment and Pods:**
+- **Kubernetes Deployment and Pods:**
   A Deployment ensures that a specified number of pod replicas are running and automatically replaces failed pods. The pod template includes the container image and the port on which the application inside listens. ([levelup.gitconnected.com][3], [linkedin.com][14])
 
-* **Kubernetes Service Types & Port Mapping:**
+- **Kubernetes Service Types & Port Mapping:**
   A Service with `type: LoadBalancer` allocates a cloud load balancer and provides an external IP. It exposes port 80 externally and forwards to `targetPort: 8000` inside the pod. This decouples external port requirements from the container’s internal port. ([kubernetes.io][4], [levelup.gitconnected.com][3])
 
 ---
 
 ## Troubleshooting
 
-* **Cluster Creation Errors:**
+- **Cluster Creation Errors:**
 
-  * If `gcloud container clusters create` fails with “default network not found,” run `gcloud compute networks create default`. ([github.com][10], [medium.com][1])
-  * If GKE reports more nodes than expected, ensure you didn’t specify multiple zones under `--node-locations`. ([stackoverflow.com][15], [stackoverflow.com][16])
+  - If `gcloud container clusters create` fails with “default network not found,” run `gcloud compute networks create default`. ([github.com][10], [medium.com][1])
+  - If GKE reports more nodes than expected, ensure you didn’t specify multiple zones under `--node-locations`. ([stackoverflow.com][15], [stackoverflow.com][16])
 
-* **Docker Build Failures:**
+- **Docker Build Failures:**
 
-  * If `docker build` is killed due to lack of memory, try increasing VM disk or memory, or use a smaller base image (e.g., `alpine`). ([stackoverflow.com][12])
-  * Check for syntax errors in the Dockerfile or missing files in the build context. ([stackoverflow.com][12], [skills.google][2])
+  - If `docker build` is killed due to lack of memory, try increasing VM disk or memory, or use a smaller base image (e.g., `alpine`). ([stackoverflow.com][12])
+  - Check for syntax errors in the Dockerfile or missing files in the build context. ([stackoverflow.com][12], [skills.google][2])
 
-* **Docker Push Authentication Errors:**
+- **Docker Push Authentication Errors:**
 
-  * If `docker push` yields `denied: Permission denied`, re-run `gcloud auth configure-docker` and confirm IAM roles (`roles/storage.admin`). ([community.jenkins.io][13])
+  - If `docker push` yields `denied: Permission denied`, re-run `gcloud auth configure-docker` and confirm IAM roles (`roles/storage.admin`). ([community.jenkins.io][13])
 
-* **Pods CrashLoopBackOff:**
+- **Pods CrashLoopBackOff:**
 
-  * Inspect pod logs with `kubectl logs <pod-name>`.
-  * Verify the container listens on port 8000 (as declared in `containerPort`). ([levelup.gitconnected.com][3], [stackoverflow.com][12])
+  - Inspect pod logs with `kubectl logs <pod-name>`.
+  - Verify the container listens on port 8000 (as declared in `containerPort`). ([levelup.gitconnected.com][3], [stackoverflow.com][12])
 
-* **Service `<pending>` IP for Long Time:**
+- **Service `<pending>` IP for Long Time:**
 
-  * Check project quota for external IP addresses (`gcloud compute project-info describe --project=[PROJECT_ID]`).
-  * Ensure your cluster’s subnet has available IPs for a load balancer. ([kubernetes.io][4], [github.com][11])
+  - Check project quota for external IP addresses (`gcloud compute project-info describe --project=[PROJECT_ID]`).
+  - Ensure your cluster’s subnet has available IPs for a load balancer. ([kubernetes.io][4], [github.com][11])
 
 ---
 
@@ -436,34 +458,34 @@ This playbook outlines how to build and deploy the **echo-web** sample applicati
 2. **Implement CI/CD**
    Use Cloud Build or GitHub Actions to automate:
 
-   * Docker build and tag (e.g., `v2`)
-   * Push to GCR
-   * Update Kubernetes Deployment (`kubectl set image deployment/echo-web echo-web=gcr.io/[PROJECT_ID]/echo-app:v2`)
-   * Roll back on failure. ([stackoverflow.com][17], [community.jenkins.io][13])
+   - Docker build and tag (e.g., `v2`)
+   - Push to GCR
+   - Update Kubernetes Deployment (`kubectl set image deployment/echo-web echo-web=gcr.io/[PROJECT_ID]/echo-app:v2`)
+   - Roll back on failure. ([stackoverflow.com][17], [community.jenkins.io][13])
 
 3. **Enable TLS and Domain Mapping**
 
-   * Create a Managed SSL certificate and use an Ingress resource to terminate HTTPS on port 443.
-   * Map a custom domain to the LoadBalancer’s external IP. ([levelup.gitconnected.com][3], [fusionauth.io][5])
+   - Create a Managed SSL certificate and use an Ingress resource to terminate HTTPS on port 443.
+   - Map a custom domain to the LoadBalancer’s external IP. ([levelup.gitconnected.com][3], [fusionauth.io][5])
 
 4. **Monitor and Logging**
 
-   * Enable Stackdriver (Cloud Monitoring) to track CPU/memory usage.
-   * Use Cloud Logging to aggregate application logs from pods for troubleshooting. ([medium.com][1], [levelup.gitconnected.com][3])
+   - Enable Stackdriver (Cloud Monitoring) to track CPU/memory usage.
+   - Use Cloud Logging to aggregate application logs from pods for troubleshooting. ([medium.com][1], [levelup.gitconnected.com][3])
 
 5. **Security Best Practices**
 
-   * Use a minimal base image (e.g., `gcr.io/distroless/base`) to reduce attack surface.
-   * Implement Binary Authorization to enforce signed container images. ([community.jenkins.io][13])
+   - Use a minimal base image (e.g., `gcr.io/distroless/base`) to reduce attack surface.
+   - Implement Binary Authorization to enforce signed container images. ([community.jenkins.io][13])
 
 ---
 
 By following this playbook, you have:
 
-* Created a cost-efficient two-node GKE cluster named **echo-cluster**.
-* Built and tagged a Docker image (`echo-app:v1`) from the `echo-web` Go application.
-* Pushed the image to Google Container Registry under `gcr.io/[PROJECT_ID]/echo-app:v1`.
-* Deployed the application to Kubernetes as a **Deployment** named **echo-web** and exposed it via a **Service** listening on port 80 (targeting port 8000 in the container).
+- Created a cost-efficient two-node GKE cluster named **echo-cluster**.
+- Built and tagged a Docker image (`echo-app:v1`) from the `echo-web` Go application.
+- Pushed the image to Google Container Registry under `gcr.io/[PROJECT_ID]/echo-app:v1`.
+- Deployed the application to Kubernetes as a **Deployment** named **echo-web** and exposed it via a **Service** listening on port 80 (targeting port 8000 in the container).
 
 This end-to-end workflow lays the foundation for containerized microservices development and paves the way for CI/CD integration, autoscaling, and production readiness.
 
@@ -485,7 +507,6 @@ This end-to-end workflow lays the foundation for containerized microservices dev
 [16]: https://stackoverflow.com/questions/66993899/why-did-gcp-give-me-6-nodes-when-i-asked-for-2?utm_source=chatgpt.com "Why did GCP give me 6 nodes when I asked for 2? - Stack Overflow"
 [17]: https://stackoverflow.com/questions/62665625/how-to-perform-kaniko-docker-build-and-push-in-separate-gitlab-ci-stages?utm_source=chatgpt.com "How to perform kaniko Docker build and push in separate GitLab CI ..."
 
-
 # Echo application example
 
 This example can be used to demonstrate how to build and deploy a containerized Go web server
@@ -494,10 +515,9 @@ application with [Kubernetes](https://kubernetes.io).
 This directory contains:
 
 - `main.go` contains the HTTP server implementation that responds to requests with inforamtion
--  about the service responding to the request. 
+- about the service responding to the request.
 - `Dockerfile` is used to build the Docker image for the application and simply compiles all go files
--  in the current directory to an application called echo-app.
+- in the current directory to an application called echo-app.
 - The Dockerfile is configured by default to configure the app to use port 8000 for the http listener service
 
 - [Kubernetes Engine Quickstart](https://cloud.google.com/kubernetes-engine/docs/quickstart)
-
