@@ -16,6 +16,8 @@ View our interactive deployment architecture diagram:
 
 **[🚀 Live Interactive Diagram](https://ovokpus.github.io/docker-gke-deploy/)**
 
+![image](./img/archi-image.png)
+
 This diagram shows the complete Docker to GKE deployment workflow including:
 
 - Development stack (Python, JavaScript, Docker)
