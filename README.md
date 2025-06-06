@@ -6,7 +6,7 @@ Building and Deploying a Docker image to a GKE Cluster
 
 This playbook outlines how to build and deploy the **echo-web** sample application to a Google Kubernetes Engine (GKE) cluster named **echo-cluster** using Docker and Google Container Registry (GCR). You will first create a two-node GKE cluster with `e2-standard-2` machine types in the `us-central1-f` zone, then download and unpack the `echo-web.tar.gz` archive from Cloud Storage to build a Docker image tagged `v1`. Next, you will authenticate Docker to push the image to `gcr.io/[PROJECT_ID]/echo-app:v1`. Finally, you will deploy the application by creating a Kubernetes **Deployment** named **echo-web** (which listens on port 8000 inside the container) and expose it via a **Service** that responds on port 80 externally. Throughout, each major concept—from clustering and nodes to containerization and service port mapping—is explained step by step. ([medium.com][1], [skills.google][2], [levelup.gitconnected.com][3], [skills.google][2], [kubernetes.io][4])
 
-Scroll down to find the ![playbook](#playbook)
+Scroll down to find the [playbook](#playbook)
 
 ---
 
